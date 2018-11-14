@@ -1,0 +1,13 @@
+lab0_ex3.c:2:11: error: expected ‘=’, ‘,’, ‘;’, ‘asm’ or ‘__attribute__’ before ‘.’ token
+     (gate).gd_p = 1;                                    \
+           ^
+lab0_ex3.c:3:11: error: expected ‘=’, ‘,’, ‘;’, ‘asm’ or ‘__attribute__’ before ‘.’ token
+     (gate).gd_off_31_16 = (uint32_t)(off) >> 16;        \
+           ^
+lab0_ex3.c:4:1: error: expected identifier or ‘(’ before ‘}’ token
+ }
+ ^
+lab0_ex3.c: In function ‘main’:
+lab0_ex3.c:33:5: warning: incompatible implicit declaration of built-in function ‘printf’ [enabled by default]
+     printf("intr is 0x%x\n",intr);
+     ^
