@@ -94,7 +94,7 @@ i386-elf-objdump 、ld和objdump等。
 make "V=" > 1.txt 
 ```
 查看链接详情
-![](/Users/haojin/Desktop/OS/lab1/img/img2.png)
+![](img/img2.png)
 可以看到其依赖的所有文件
 单个文件编译gcc命令如下：
 
@@ -158,6 +158,10 @@ objcopy -S -O binary obj/bootblock.o obj/bootblock.out
 
 - -S  移除所有符号和重定位信息
 - 	-O <bfdname>  指定输出格式
+
+#### 一个被系统认为是符合规范的硬盘主引导扇区的特征是什么？
+从sign.c的代码来看，一个磁盘主引导扇区只有512字节。且第510个（倒数第二个）字节是0x55，第511个（倒数第一个）字节是0xAA。
+![](img/img3.png)
 ### 练习2
 ### 练习3
 ### 练习4
