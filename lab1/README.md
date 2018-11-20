@@ -170,6 +170,12 @@ objcopy -S -O binary obj/bootblock.o obj/bootblock.out
 - 从0x7c00开始跟踪代码运行,将单步跟踪反汇编得到的代码与bootasm.S和 bootblock.asm进行比较。
 - 自己找一个bootloader或内核中的代码位置，设置断点并进行测试。
 
+1 修改 lab1/tools/gdbinit,内容为:
+
+```makefile
+set architecture i8086
+target remote :1234
+```
 ### 练习3
 ### 练习4
 ### 练习5
