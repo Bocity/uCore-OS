@@ -176,6 +176,54 @@ objcopy -S -O binary obj/bootblock.o obj/bootblock.out
 set architecture i8086
 target remote :1234
 ```
+命令行运行make debug，可以进行调试
+![](img/img4.png)
+
+可以发现启动后第一条指令地址：
+![](img/img5.png)
+
+要用到的gdb指令
+
+```shell
+(gdb) i r
+(gdb) i r a                     # 查看所有寄存器（包括浮点、多媒体）
+(gdb) i r esp
+(gdb) i r pc
+(gdb) x /wx 0x80040000    # 以16进制显示指定地址处的数据
+(gdb) x /8x $esp
+(gdb) x /16x $esp+12
+(gdb) x /16s 0x86468700   # 以字符串形式显示指定地址处的数据
+(gdb) x /24i 0x8048a51      # 以指令形式显示指定地址处的数据（24条）
+(gdb) b *0x80400000 #断点
+(gdb) watch *(unsigned int *)0xbffff400==0x90909090 #监测点
+```
+
+EIP 的内容为：
+0xF000 
+CS 的内容为：
+0xFFF0H
+
+所以第一条指令地址：
+F000*16 + FFF0H = FFFF0H
+
+![](img/img6.png)
+可以看到，第一条指令为无条件跳转，跳转到F000*16+E05B = FE05B处继续执行BIOS
+
+在tools/下的gdbinit 中添加下列语句
+
+```shell
+b *0x7c00 #在0x7c00打断点
+continue	#继续执行代码
+x /10i $pc	#查看当前要执行的十个代码
+```
+
+重新运行make debug 后，在0x7c00处中断，并显示附近指令
+vim打开bootasm.S 用/查找
+![](img/img7.png)
+可以发现，bootloader此处反汇编出的代码与bootasm.S处的代码相同
+
+通过gdb下si指令，可以单步执行该代码
+
 ### 练习3
 ### 练习4
 ### 练习5
