@@ -225,6 +225,22 @@ vim打开bootasm.S 用/查找
 通过gdb下si指令，可以单步执行该代码
 
 ### 练习3
+
+```c
+    cli                                             # Disable interrupts
+    cld                                             # String operations increment
+
+    # Set up the important data segment registers (DS, ES, SS).
+    xorw %ax, %ax                                   # Segment number zero
+    movw %ax, %ds                                   # -> Data Segment
+    movw %ax, %es                                   # -> Extra Segment
+    movw %ax, %ss                                   # -> Stack Segment
+
+```
+
+- 首先进行初始化操作，关中断并且将段寄存器置零
+
+
 ### 练习4
 ### 练习5
 ### 练习6
