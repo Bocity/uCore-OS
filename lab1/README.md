@@ -516,9 +516,87 @@ gdb layout
     while (1);
 ```
 
+#### readsect函数
+用于加载一个扇区的内容到指定的内存中，读取的过程大致为：(1)等待磁盘准备好；(2)发出读取扇区的命令，通过访问IO地址寄存器0x1f0~0x1f7实现；(3)等待磁盘准备好；(4)把磁盘扇区读取到指定内存中。
 
+```c
+static void
+	readsect(void *dst, uint32_t secno) {
+	    waitdisk();
+	
+	    outb(0x1F2, 1);                         // 设置读取扇区的数目为1
+	    outb(0x1F3, secno & 0xFF);
+	    outb(0x1F4, (secno >> 8) & 0xFF);
+	    outb(0x1F5, (secno >> 16) & 0xFF);
+	    outb(0x1F6, ((secno >> 24) & 0xF) | 0xE0);
+	        // 上面四条指令联合制定了扇区号
+	        // 在这4个字节线联合构成的32位参数中
+	        //   29-31位强制设为1
+	        //   28位(=0)表示访问"Disk 0"
+	        //   0-27位是28位的偏移量
+	    outb(0x1F7, 0x20);                      // 0x20命令，读取扇区
+	
+	    waitdisk();
 
+	    insl(0x1F0, dst, SECTSIZE / 4);         // 读取到dst位置，
+	                                            // 幻数4因为这里以DW为单位
+	}
+```
+#### readseg函数
+这个函数的作用是从ELF文件偏移为offset处，读取count个字节到内存地址为va处
 
+```c
+static void
+	readseg(uintptr_t va, uint32_t count, uint32_t offset) {
+	    uintptr_t end_va = va + count;
+	
+	    va -= offset % SECTSIZE;
+	
+	    uint32_t secno = (offset / SECTSIZE) + 1; 
+	    // 加1因为0扇区被引导占用
+	    // ELF文件从1扇区开始
+	
+	    for (; va < end_va; va += SECTSIZE, secno ++) {
+	        readsect((void *)va, secno);
+	    }
+	}
+```
 
+#### bootmain函数
+首先将硬盘上从第一个扇区开始的4096个字节读到内存中地址为0x10000处，然后检查ELF文件是否合法，并找到程序段的起始地址，读取内核程序到内存中，最后执行内核程序
+
+```c
+void bootmain(void) {
+	    // 首先读取ELF的头部
+	    readseg((uintptr_t)ELFHDR, SECTSIZE * 8, 0);
+	
+	    // 通过储存在头部的幻数判断是否是合法的ELF文件
+	    if (ELFHDR->e_magic != ELF_MAGIC) {
+	        goto bad;
+	    }
+	
+	    struct proghdr *ph, *eph;
+	
+	    // ELF头部有描述ELF文件应加载到内存什么位置的描述表，
+	    // 先将描述表的头地址存在ph
+	    ph = (struct proghdr *)((uintptr_t)ELFHDR + ELFHDR->e_phoff);
+	    eph = ph + ELFHDR->e_phnum;
+	
+	    // 按照描述表将ELF文件中数据载入内存
+	    for (; ph < eph; ph ++) {
+	        readseg(ph->p_va & 0xFFFFFF, ph->p_memsz, ph->p_offset);
+	    }
+	    // ELF文件0x1000位置后面的0xd1ec比特被载入内存0x00100000
+	    // ELF文件0xf000位置后面的0x1d20比特被载入内存0x0010e000
+
+	    // 根据ELF头部储存的入口信息，找到内核的入口
+	    ((void (*)(void))(ELFHDR->e_entry & 0xFFFFFF))();
+	
+	bad:
+	    outw(0x8A00, 0x8A00);
+	    outw(0x8A00, 0x8E00);
+	    while (1);
+	}
+```
 ### 练习5
 ### 练习6
