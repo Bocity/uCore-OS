@@ -262,6 +262,7 @@ ss清零
   #   For backwards compatibility with the earliest PCs, physical
   #   address line 20 is tied low, so that addresses higher than
   #   1MB wrap around to zero by default.  This code undoes this.
+  开启A20地址线之后，用来表示内存地址的位数变多了。开启前20位，开启后是32位。如果不开启A20地址线内存寻址最大只能找到1M，对于1M以上的地址访问会变成对address mod 1M地址的访问。通过将键盘控制器上的A20线置于高电位，全部32条地址线可用，可以访问4G的内存空间。
 打开A20地址线
 为了兼容早期的PC机，第20根地址线在实模式下不能使用
 所以超过1MB的地址，默认就会返回到地址0，重新从0循环计数，
@@ -598,5 +599,219 @@ void bootmain(void) {
 	    while (1);
 	}
 ```
-### 练习5
+### 练习5 实现函数调用堆栈跟踪函数
+第五题为实现函数调用堆栈函数，需补全kern/debug/kdebug.c中的print_stackframe()函数。
+![](img/img11.png)
+有提示，所以编码比较简单
+
+- step1 获取ebp的值  以十六进制形式输出
+- step2 获取eip的值  以十六进制形式输出
+- step3 遍历栈depth  输出参数
+- step4 输出debug 信息
+- 获得上一个 ebp
+
+```cpp
+/*
+栈底方向      高位地址
+...          
+...          
+参数3        
+参数2        
+参数1        
+返回地址     
+上一层[ebp]   <-------- [esp/当前ebp]
+局部变量      低位地址
+ss:[ebp-8]   ;变量2
+ss:[ebp-4]   ;变量1
+ss:[ebp]       ;栈针
+ss:[ebp+4]  ;返回地址
+ss:[ebp+8]   ;第一个参数
+*/
+
+	uint32_t ebp = read_ebp();
+	uint32_t eip = read_eip();
+	int i;
+	for(i = 0; i < STACKFRAME_DEPTH ; ++i) {
+		cprintf("The value of ebp:0x%08x eip:0x%08x", ebp, eip);
+		uint32_t *arg = (uint32_t *)ebp + 2;
+		cprintf(" arg:");
+		int j;
+		for(j = 0; j < 4; ++j) {
+			cprintf("0x%08x  ", arg + j);
+		}
+		cputs("");
+		print_debuginfo(eip - 1);
+		eip = ((uint32_t *)ebp)[1];
+		ebp = ((uint32_t*)ebp)[0];
+	} 
+```
+
+这里好奇为什么不能使用printf
+
+查看stdio.c后得知只有如下实现：
+cputch 
+cprintf
+cputchar
+cputs
+getchar
+
+在得到实验结果时，实验楼遇上了问题，此步make debug 会卡死虚拟环境
+
+于是考虑再三，选择迁移实验环境到本地的Ubuntu
+通过以下三条命令配置实验环境：
+
+```shell
+sudo apt-get install build-essential
+sudo apt-get install livsdl1.2-dev
+sudo apt-get install qemu-system
+```
+
+结果
+
+```c
+Special kernel symbols:  entry  0x00100000 (phys)  etext  0x0010328a (phys)  edata  0x0010ea16 (phys)  end    0x0010fd20 (phys)Kernel executable memory footprint: 64KBThe value of ebp:0x00007b38 eip:0x00100a3c arg:0x00007b40  0x00007b44  0x00007b48  0x00007b4c      kern/debug/kdebug.c:306: print_stackframe+21The value of ebp:0x00007b48 eip:0x00100d4a arg:0x00007b50  0x00007b54  0x00007b58  0x00007b5c      kern/debug/kmonitor.c:125: mon_backtrace+10The value of ebp:0x00007b68 eip:0x0010007f arg:0x00007b70  0x00007b74  0x00007b78  0x00007b7c      kern/init/init.c:48: grade_backtrace2+19The value of ebp:0x00007b88 eip:0x001000a1 arg:0x00007b90  0x00007b94  0x00007b98  0x00007b9c      kern/init/init.c:53: grade_backtrace1+27The value of ebp:0x00007ba8 eip:0x001000be arg:0x00007bb0  0x00007bb4  0x00007bb8  0x00007bbc      kern/init/init.c:58: grade_backtrace0+19The value of ebp:0x00007bc8 eip:0x001000df arg:0x00007bd0  0x00007bd4  0x00007bd8  0x00007bdc      kern/init/init.c:63: grade_backtrace+26The value of ebp:0x00007be8 eip:0x00100050 arg:0x00007bf0  0x00007bf4  0x00007bf8  0x00007bfc      kern/init/init.c:28: kern_init+79The value of ebp:0x00007bf8 eip:0x00007d6e arg:0x00007c00  0x00007c04  0x00007c08  0x00007c0c      <unknow>: -- 0x00007d6d --++ setup timer interrupts(THU.CST) os is loading ...Special kernel symbols:  entry  0x00100000 (phys)  etext  0x0010328a (phys)  edata  0x0010ea16 (phys)  end    0x0010fd20 (phys)Kernel executable memory footprint: 64KBThe value of ebp:0x00007b38 eip:0x00100a3c arg:0x00007b40  0x00007b44  0x00007b48  0x00007b4c      kern/debug/kdebug.c:306: print_stackframe+21The value of ebp:0x00007b48 eip:0x00100d4a arg:0x00007b50  0x00007b54  0x00007b58  0x00007b5c      kern/debug/kmonitor.c:125: mon_backtrace+10The value of ebp:0x00007b68 eip:0x0010007f arg:0x00007b70  0x00007b74  0x00007b78  0x00007b7c      kern/init/init.c:48: grade_backtrace2+19The value of ebp:0x00007b88 eip:0x001000a1 arg:0x00007b90  0x00007b94  0x00007b98  0x00007b9c      kern/init/init.c:53: grade_backtrace1+27The value of ebp:0x00007ba8 eip:0x001000be arg:0x00007bb0  0x00007bb4  0x00007bb8  0x00007bbc      kern/init/init.c:58: grade_backtrace0+19The value of ebp:0x00007bc8 eip:0x001000df arg:0x00007bd0  0x00007bd4  0x00007bd8  0x00007bdc      kern/init/init.c:63: grade_backtrace+26The value of ebp:0x00007be8 eip:0x00100050 arg:0x00007bf0  0x00007bf4  0x00007bf8  0x00007bfc      kern/init/init.c:28: kern_init+79The value of ebp:0x00007bf8 eip:0x00007d6e arg:0x00007c00  0x00007c04  0x00007c08  0x00007c0c      <unknow>: -- 0x00007d6d --++ setup timer interrupts
+```
+最后一行输出的ebp为0x00007bf8，eip为0x00007d68，这时因为bootloader被加载到了0x00007c00地址处，在执行到bootasm最后"call bootmain"指令时，首先将返回地址压栈，再讲当前ebp压栈，所以此时esp为0x00007bf8。在bootmain函数入口处，有mov %esp %ebp指令，故bootmain中ebp为0x00007bf8。
+
+
 ### 练习6
+
+- 中断描述符表（也可简称为保护模式下的中断向量表）中一个表项占多少字节？其中哪几位代表中断处理代码的入口？
+	
+	IDT是一个8字节的描述符数组，但IDT的第一项可以包含一个描述符
+	![](img/img12.png)
+	
+	前16位为段偏移值
+	接着16位为段选择子
+	然后5位3位4位1位2位1位表示各种状态
+	最后又16位段偏移值
+	
+	所以从中可以看出，中断处理代码的入口为第一字节和最后一个字节组成的地址。
+
+- 请编程完善kern/trap/trap.c中对中断向量表进行初始化的函数idt_init。在idt_init函数中，依次对所有中断入口进行初始化。使用mmu.h中的SETGATE宏，填充idt数组内容。每个中断的入口由tools/vectors.c生成，使用trap.c中声明的vectors数组即可。
+
+```
+     /* LAB1 YOUR CODE : STEP 2 */     /* (1) Where are the entry addrs of each Interrupt Service Routine (ISR)?      *     All ISR's entry addrs are stored in __vectors. where is uintptr_t __vectors[] ?      *     __vectors[] is in kern/trap/vector.S which is produced by tools/vector.c      *     (try "make" command in lab1, then you will find vector.S in kern/trap DIR)      *     You can use  "extern uintptr_t __vectors[];" to define this extern variable which will be used later.      * (2) Now you should setup the entries of ISR in Interrupt Description Table (IDT).      *     Can you see idt[256] in this file? Yes, it's IDT! you can use SETGATE macro to setup each item of IDT      * (3) After setup the contents of IDT, you will let CPU know where is the IDT by using 'lidt' instruction.      *     You don't know the meaning of this instruction? just google it! and check the libs/x86.h to know more.      *     Notice: the argument of lidt is idt_pd. try to find it!      */
+```
+SETGATE(gate, istrap, sel, off, dpl)
+
+
+```c
+ extern uintptr_t __vectors[];    int i;    for(i = 0;  i < 256; ++i){        SETGATE(idt[i],0,GD_KTEXT,__vectors[i],DPL_KERNEL);    }       SETGATE(idt[T_SWITCH_TOK],0,GD_KTEXT,__vectors[T_SWITCH_TOK],DPL_USER);    lidt(&idt_pd); 
+/*
+
+    传入的第一个参数gate是中断的描述符表
+    传入的第二个参数istrap用来判断是中断还是trap
+    传入的第三个参数sel的作用是进行段的选择
+    传入的第四个参数off表示偏移
+    传入的第五个参数dpl表示这个中断的优先级
+
+*/
+```
+
+
+- 请编程完善trap.c中的中断处理函数trap，在对时钟中断进行处理的部分填写trap函数中处理时钟中断的部分，使操作系统每遇到100次时钟中断后，调用print_ticks子程序，向屏幕上打印一行文字”100 ticks”。
+
+代码
+
+```c
+ case IRQ_OFFSET + IRQ_TIMER:
+        /* LAB1 YOUR CODE : STEP 3 */
+        /* handle the timer interrupt */
+        /* (1) After a timer interrupt, you should record this event using a global variable (increase it), such as ticks in kern/driver/clock.c
+         * (2) Every TICK_NUM cycle, you can print some info using a funciton, such as print_ticks().
+         * (3) Too Simple? Yes, I think so!
+         */
+	ticks++;
+    if(ticks%TICK_NUM == 0)//每次时钟中断之后ticks就会加一 当加到TICK_NUM次数时 打印并重新开始
+    print_ticks();//前面有定义 打印字符串
+```
+
+实验截图如下
+![](img/img13.png)
+
+## challenge 1
+
+```c
+kern/init/init.c
+static void lab1_switch_to_user(void) {
+--------------------------------------------------------
+	"sub $0x8, %%esp \n" 
+	让 SS 和 ESP 这两个寄存器 有机会 POP 出时 更新 SS 和 ESP
+	因为 从内核态进入中断 它的特权级没有改变 是不会 push 进 SS 和 ESP的 但是我们又需要通过 POP SS 和 ESP 去修改它们
+	进入 T_SWITCH_TOU(120) 中断
+	将原来的栈顶指针还给esp栈底指针
+--------------------------------------------------------
+	asm volatile (
+	    "sub $0x8, %%esp \n"
+	    "int %0 \n"
+	    "movl %%ebp, %%esp"
+	    : 
+	    : "i"(T_SWITCH_TOU)
+	);
+}
+
+static void lab1_switch_to_kernel(void) {
+--------------------------------------------------------
+	进入 T_SWITCH_TOK(121) 中断
+	将原来的栈顶指针还给esp栈底指针
+--------------------------------------------------------
+	asm volatile (
+	    "int %0 \n"
+	    "movl %%ebp, %%esp \n"
+	    : 
+	    : "i"(T_SWITCH_TOK)
+	);
+}
+kern/trap/trap.c :
+static void trap_dispatch(struct trapframe *tf)
+通过"改造"一个中断 来进入我们想进入的用户态或者内核态
+    case T_SWITCH_TOU:
+        if (tf->tf_cs != USER_CS) {
+            switchk2u = *tf;
+            switchk2u.tf_cs = USER_CS;
+            switchk2u.tf_ds = switchk2u.tf_es = switchk2u.tf_ss = USER_DS;
+            switchk2u.tf_eflags |= FL_IOPL_MASK; // IOPL 改为 0
+            switchk2u.tf_esp = (uint32_t)tf + sizeof(struct trapframe) - 8; // tf->esp的位置
+            // iret 回到用户栈
+            *((uint32_t *)tf - 1) = (uint32_t)&switchk2u;
+        }
+		break;
+    case T_SWITCH_TOK:
+        if (tf->tf_cs != KERNEL_
+        
+        CS) {
+            tf->tf_cs = KERNEL_CS;
+            tf->tf_ds = tf->tf_es = KERNEL_DS;
+            tf->tf_eflags &= ~FL_IOPL_MASK;
+            switchu2k = (struct trapframe *)(tf->tf_esp - (sizeof(struct trapframe) - 8));
+            memmove(switchu2k, tf, sizeof(struct trapframe) - 8);
+            *((uint32_t *)tf - 1) = (uint32_t)switchu2k;
+        }
+        break;
+```
+
+## challenge 2
+用键盘实现用户模式内核模式切换。具体目标是：“键盘输入3时切换到用户模式，键盘输入0时切换到内核模式”。 基本思路是借鉴软中断(syscall功能)的代码，并且把trap.c中软中断处理的设置语句拿过来。
+
+```c
+kern/trap/trap.c
+case IRQ_OFFSET + IRQ_KBD:
+        c = cons_getc();
+        cprintf("kbd [%03d] %c\n", c, c);
+        if (c == '0') {
+        	if (tf->tf_cs != KERNEL_CS) {
+				tf->tf_cs = KERNEL_CS;
+				tf->tf_ds = tf->tf_ss = tf->tf_es = KERNEL_DS;
+				tf->tf_eflags &= ~FL_IOPL_MASK;
+			}
+        	print_trapframe(tf);
+        }
+        if (c == '3') {
+        	if (tf->tf_cs != USER_CS) {
+				tf->tf_cs = USER_CS;
+				tf->tf_ds = tf->tf_ss = tf->tf_es = USER_DS;
+				tf->tf_eflags |= FL_IOPL_MASK;
+			}
+        	print_trapframe(tf);
+        }```
