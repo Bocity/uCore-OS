@@ -44,11 +44,6 @@ SECTIONS {
         *(.data)
     }
 
-    . = ALIGN(0x1000);
-    .data.pgdir : {
-        *(.data.pgdir)
-    }
-
     PROVIDE(edata = .);
 
     .bss : {

@@ -54,6 +54,13 @@ idt_init(void) {
       *     You don't know the meaning of this instruction? just google it! and check the libs/x86.h to know more.
       *     Notice: the argument of lidt is idt_pd. try to find it!
       */
+    extern uintptr_t __vectors[];
+    int i;
+    for(i = 0; i < 256; i++) {
+        SETGATE(idt[i], 0, GD_KTEXT, __vectors[i], DPL_KERNEL);
+    }
+    SETGATE(idt[T_SYSCALL], 0, GD_KTEXT, __vectors[T_SYSCALL], DPL_USER);
+    lidt(&idt_pd);
      /* LAB5 YOUR CODE */ 
      //you should update your lab1 code (just add ONE or TWO lines of code), let user app to use syscall to get the service of ucore
      //so you should setup the syscall interrupt gate in here
@@ -183,6 +190,8 @@ pgfault_handler(struct trapframe *tf) {
 static volatile int in_swap_tick_event = 0;
 extern struct mm_struct *check_mm_struct;
 
+struct trapframe switchk2u, *switchu2k;
+
 static void
 trap_dispatch(struct trapframe *tf) {
     char c;
@@ -229,6 +238,8 @@ trap_dispatch(struct trapframe *tf) {
          * IMPORTANT FUNCTIONS:
 	     * sched_class_proc_tick
          */
+        ticks++;
+        run_timer_list(current);
         break;
     case IRQ_OFFSET + IRQ_COM1:
         c = cons_getc();
@@ -240,8 +251,30 @@ trap_dispatch(struct trapframe *tf) {
         break;
     //LAB1 CHALLENGE 1 : YOUR CODE you should modify below codes.
     case T_SWITCH_TOU:
+        if (tf->tf_cs != USER_CS) {
+            switchk2u = *tf;
+            switchk2u.tf_cs = USER_CS;
+            switchk2u.tf_ds = switchk2u.tf_es = switchk2u.tf_ss = USER_DS;
+            switchk2u.tf_esp = (uint32_t)tf + sizeof(struct trapframe) - 8;
+        
+            // set eflags, make sure ucore can use io under user mode.
+            // if CPL > IOPL, then cpu will generate a general protection.
+            switchk2u.tf_eflags |= FL_IOPL_MASK;
+        
+            // set temporary stack
+            // then iret will jump to the right stack
+            *((uint32_t *)tf - 1) = (uint32_t)&switchk2u;
+        }
+        break;
     case T_SWITCH_TOK:
-        panic("T_SWITCH_** ??\n");
+        if (tf->tf_cs != KERNEL_CS) {
+            tf->tf_cs = KERNEL_CS;
+            tf->tf_ds = tf->tf_es = KERNEL_DS;
+            tf->tf_eflags &= ~FL_IOPL_MASK;
+            switchu2k = (struct trapframe *)(tf->tf_esp - (sizeof(struct trapframe) - 8));
+            memmove(switchu2k, tf, sizeof(struct trapframe) - 8);
+            *((uint32_t *)tf - 1) = (uint32_t)switchu2k;
+        }
         break;
     case IRQ_OFFSET + IRQ_IDE1:
     case IRQ_OFFSET + IRQ_IDE2:

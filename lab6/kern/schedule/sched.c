@@ -30,7 +30,7 @@ sched_class_pick_next(void) {
     return sched_class->pick_next(rq);
 }
 
-void
+static void
 sched_class_proc_tick(struct proc_struct *proc) {
     if (proc != idleproc) {
         sched_class->proc_tick(rq, proc);
@@ -97,4 +97,9 @@ schedule(void) {
         }
     }
     local_intr_restore(intr_flag);
+}
+
+void
+run_timer_list(struct proc_struct *proc) {
+    sched_class_proc_tick(proc);
 }
