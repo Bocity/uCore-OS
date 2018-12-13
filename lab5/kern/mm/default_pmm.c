@@ -97,30 +97,24 @@ free_area_t free_area;
 
 #define free_list (free_area.free_list)
 #define nr_free (free_area.nr_free)
-
-static void
-default_init(void) {
+static void default_init(void) {
     list_init(&free_list);
-    nr_free = 0;
+    nr_free = 0; 
 }
-
-static void
-default_init_memmap(struct Page *base, size_t n) {
+static void default_init_memmap(struct Page *base, size_t n) {
     assert(n > 0);
     struct Page *p = base;
     for (; p != base + n; p ++) {
-        assert(PageReserved(p));
+        assert(PageReserved(p)); 
         p->flags = p->property = 0;
         set_page_ref(p, 0);
     }
-    base->property = n;
+    base->property = n; 
     SetPageProperty(base);
     nr_free += n;
-    list_add(&free_list, &(base->page_link));
+    list_add_before(&free_list, &(base->page_link));
 }
-
-static struct Page *
-default_alloc_pages(size_t n) {
+static struct Page * default_alloc_pages(size_t n) {
     assert(n > 0);
     if (n > nr_free) {
         return NULL;
@@ -135,20 +129,19 @@ default_alloc_pages(size_t n) {
         }
     }
     if (page != NULL) {
-        list_del(&(page->page_link));
         if (page->property > n) {
             struct Page *p = page + n;
             p->property = page->property - n;
-            list_add(&free_list, &(p->page_link));
-    }
+            SetPageProperty(p);
+            list_add(&(page->page_link), &(p->page_link));
+        }
+        list_del(&(page->page_link));
         nr_free -= n;
         ClearPageProperty(page);
     }
     return page;
 }
-
-static void
-default_free_pages(struct Page *base, size_t n) {
+static void default_free_pages(struct Page *base, size_t n) {
     assert(n > 0);
     struct Page *p = base;
     for (; p != base + n; p ++) {
@@ -175,7 +168,15 @@ default_free_pages(struct Page *base, size_t n) {
         }
     }
     nr_free += n;
-    list_add(&free_list, &(base->page_link));
+    le = list_next(&free_list);
+    while (le != &free_list) {
+        p = le2page(le, page_link);
+        if (base + base->property <= p) {
+            break;
+        }
+        le = list_next(le);
+    }
+    list_add_before(le, &(base->page_link));
 }
 
 static size_t

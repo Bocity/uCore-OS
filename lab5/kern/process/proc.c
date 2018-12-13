@@ -87,6 +87,20 @@ static struct proc_struct *
 alloc_proc(void) {
     struct proc_struct *proc = kmalloc(sizeof(struct proc_struct));
     if (proc != NULL) {
+		proc->state = PROC_UNINIT;
+		proc->pid = -1;
+		proc->runs = 0;
+		proc->kstack = 0;
+		proc->need_resched = NULL;
+		proc->parent = NULL;
+		proc->mm = NULL;
+		memset(&(proc->context),0,sizeof (struct context));
+		proc->tf = NULL;
+		proc->cr3 = boot_cr3;
+		proc->flags = 0;
+		memset(&(proc->name),0,PROC_NAME_LEN);
+        proc->wait_state = 0;  
+        proc->cptr = proc->optr = proc->yptr = NULL;
     //LAB4:EXERCISE1 YOUR CODE
     /*
      * below fields in proc_struct need to be initialized
@@ -370,6 +384,27 @@ do_fork(uint32_t clone_flags, uintptr_t stack, struct trapframe *tf) {
         goto fork_out;
     }
     ret = -E_NO_MEM;
+    proc = alloc_proc();
+    if (proc == NULL){
+        goto fork_out;
+    }
+    proc->parent = current;
+    assert(current->wait_state == 0);
+    if (setup_kstack(proc) != 0) goto bad_fork_cleanup_proc;
+    if (copy_mm(clone_flags,proc) != 0) goto bad_fork_cleanup_kstack;
+    copy_thread(proc,stack,tf);
+
+    bool flag;
+    local_intr_save(flag);
+    {
+        proc->pid = get_pid();
+        hash_proc(proc);
+        set_links(proc);
+    }
+    local_intr_restore(flag);
+    wakeup_proc(proc);
+    ret = proc->pid;
+
     //LAB4:EXERCISE2 YOUR CODE
     /*
      * Some Useful MACROs, Functions and DEFINEs, you can use them in below implementation.
@@ -602,6 +637,11 @@ load_icode(unsigned char *binary, size_t size) {
      *          tf_eip should be the entry point of this binary program (elf->e_entry)
      *          tf_eflags should be set to enable computer to produce Interrupt
      */
+        tf->tf_cs = USER_CS;
+    tf->tf_ds = tf->tf_es = tf->tf_ss = USER_DS;
+    tf->tf_esp = USTACKTOP;//0xB0000000
+    tf->tf_eip = elf->e_entry;
+    tf->tf_eflags = FL_IF;
     ret = 0;
 out:
     return ret;
