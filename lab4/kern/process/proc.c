@@ -86,6 +86,18 @@ static struct proc_struct *
 alloc_proc(void) {
     struct proc_struct *proc = kmalloc(sizeof(struct proc_struct));
     if (proc != NULL) {
+		proc->state = PROC_UNINIT;
+		proc->pid = -1;
+		proc->runs = 0;
+		proc->kstack = 0;
+		proc->need_resched = NULL;
+		proc->parent = NULL;
+		proc->mm = NULL;
+		memset(&(pro->context),0,sizeof (struct context));
+		proc->tf = NULL;
+		proc->cr3 = boot_cr3;
+		proc->flags = 0;
+		memset(&(proc->name),0,PROC_NAME_LEN);
     //LAB4:EXERCISE1 YOUR CODE
     /*
      * below fields in proc_struct need to be initialized
