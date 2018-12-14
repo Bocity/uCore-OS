@@ -32,7 +32,7 @@
 
 在lab1下执行make
 
-![](/Users/haojin/Desktop/OS/lab1/img/img1.png)
+![](img/img1.png)
 
 生成 bin文件夹和 obj文件夹
 #### ucore.img
@@ -669,7 +669,56 @@ sudo apt-get install qemu-system
 结果
 
 ```c
-Special kernel symbols:  entry  0x00100000 (phys)  etext  0x0010328a (phys)  edata  0x0010ea16 (phys)  end    0x0010fd20 (phys)Kernel executable memory footprint: 64KBThe value of ebp:0x00007b38 eip:0x00100a3c arg:0x00007b40  0x00007b44  0x00007b48  0x00007b4c      kern/debug/kdebug.c:306: print_stackframe+21The value of ebp:0x00007b48 eip:0x00100d4a arg:0x00007b50  0x00007b54  0x00007b58  0x00007b5c      kern/debug/kmonitor.c:125: mon_backtrace+10The value of ebp:0x00007b68 eip:0x0010007f arg:0x00007b70  0x00007b74  0x00007b78  0x00007b7c      kern/init/init.c:48: grade_backtrace2+19The value of ebp:0x00007b88 eip:0x001000a1 arg:0x00007b90  0x00007b94  0x00007b98  0x00007b9c      kern/init/init.c:53: grade_backtrace1+27The value of ebp:0x00007ba8 eip:0x001000be arg:0x00007bb0  0x00007bb4  0x00007bb8  0x00007bbc      kern/init/init.c:58: grade_backtrace0+19The value of ebp:0x00007bc8 eip:0x001000df arg:0x00007bd0  0x00007bd4  0x00007bd8  0x00007bdc      kern/init/init.c:63: grade_backtrace+26The value of ebp:0x00007be8 eip:0x00100050 arg:0x00007bf0  0x00007bf4  0x00007bf8  0x00007bfc      kern/init/init.c:28: kern_init+79The value of ebp:0x00007bf8 eip:0x00007d6e arg:0x00007c00  0x00007c04  0x00007c08  0x00007c0c      <unknow>: -- 0x00007d6d --++ setup timer interrupts(THU.CST) os is loading ...Special kernel symbols:  entry  0x00100000 (phys)  etext  0x0010328a (phys)  edata  0x0010ea16 (phys)  end    0x0010fd20 (phys)Kernel executable memory footprint: 64KBThe value of ebp:0x00007b38 eip:0x00100a3c arg:0x00007b40  0x00007b44  0x00007b48  0x00007b4c      kern/debug/kdebug.c:306: print_stackframe+21The value of ebp:0x00007b48 eip:0x00100d4a arg:0x00007b50  0x00007b54  0x00007b58  0x00007b5c      kern/debug/kmonitor.c:125: mon_backtrace+10The value of ebp:0x00007b68 eip:0x0010007f arg:0x00007b70  0x00007b74  0x00007b78  0x00007b7c      kern/init/init.c:48: grade_backtrace2+19The value of ebp:0x00007b88 eip:0x001000a1 arg:0x00007b90  0x00007b94  0x00007b98  0x00007b9c      kern/init/init.c:53: grade_backtrace1+27The value of ebp:0x00007ba8 eip:0x001000be arg:0x00007bb0  0x00007bb4  0x00007bb8  0x00007bbc      kern/init/init.c:58: grade_backtrace0+19The value of ebp:0x00007bc8 eip:0x001000df arg:0x00007bd0  0x00007bd4  0x00007bd8  0x00007bdc      kern/init/init.c:63: grade_backtrace+26The value of ebp:0x00007be8 eip:0x00100050 arg:0x00007bf0  0x00007bf4  0x00007bf8  0x00007bfc      kern/init/init.c:28: kern_init+79The value of ebp:0x00007bf8 eip:0x00007d6e arg:0x00007c00  0x00007c04  0x00007c08  0x00007c0c      <unknow>: -- 0x00007d6d --++ setup timer interrupts
+
+Special kernel symbols:
+  entry  0x00100000 (phys)
+  etext  0x0010328a (phys)
+  edata  0x0010ea16 (phys)
+  end    0x0010fd20 (phys)
+Kernel executable memory footprint: 64KB
+The value of ebp:0x00007b38 eip:0x00100a3c arg:0x00007b40  0x00007b44  0x00007b48  0x00007b4c  
+    kern/debug/kdebug.c:306: print_stackframe+21
+The value of ebp:0x00007b48 eip:0x00100d4a arg:0x00007b50  0x00007b54  0x00007b58  0x00007b5c  
+    kern/debug/kmonitor.c:125: mon_backtrace+10
+The value of ebp:0x00007b68 eip:0x0010007f arg:0x00007b70  0x00007b74  0x00007b78  0x00007b7c  
+    kern/init/init.c:48: grade_backtrace2+19
+The value of ebp:0x00007b88 eip:0x001000a1 arg:0x00007b90  0x00007b94  0x00007b98  0x00007b9c  
+    kern/init/init.c:53: grade_backtrace1+27
+The value of ebp:0x00007ba8 eip:0x001000be arg:0x00007bb0  0x00007bb4  0x00007bb8  0x00007bbc  
+    kern/init/init.c:58: grade_backtrace0+19
+The value of ebp:0x00007bc8 eip:0x001000df arg:0x00007bd0  0x00007bd4  0x00007bd8  0x00007bdc  
+    kern/init/init.c:63: grade_backtrace+26
+The value of ebp:0x00007be8 eip:0x00100050 arg:0x00007bf0  0x00007bf4  0x00007bf8  0x00007bfc  
+    kern/init/init.c:28: kern_init+79
+The value of ebp:0x00007bf8 eip:0x00007d6e arg:0x00007c00  0x00007c04  0x00007c08  0x00007c0c  
+    <unknow>: -- 0x00007d6d --
+++ setup timer interrupts
+(THU.CST) os is loading ...
+
+Special kernel symbols:
+  entry  0x00100000 (phys)
+  etext  0x0010328a (phys)
+  edata  0x0010ea16 (phys)
+  end    0x0010fd20 (phys)
+Kernel executable memory footprint: 64KB
+The value of ebp:0x00007b38 eip:0x00100a3c arg:0x00007b40  0x00007b44  0x00007b48  0x00007b4c  
+    kern/debug/kdebug.c:306: print_stackframe+21
+The value of ebp:0x00007b48 eip:0x00100d4a arg:0x00007b50  0x00007b54  0x00007b58  0x00007b5c  
+    kern/debug/kmonitor.c:125: mon_backtrace+10
+The value of ebp:0x00007b68 eip:0x0010007f arg:0x00007b70  0x00007b74  0x00007b78  0x00007b7c  
+    kern/init/init.c:48: grade_backtrace2+19
+The value of ebp:0x00007b88 eip:0x001000a1 arg:0x00007b90  0x00007b94  0x00007b98  0x00007b9c  
+    kern/init/init.c:53: grade_backtrace1+27
+The value of ebp:0x00007ba8 eip:0x001000be arg:0x00007bb0  0x00007bb4  0x00007bb8  0x00007bbc  
+    kern/init/init.c:58: grade_backtrace0+19
+The value of ebp:0x00007bc8 eip:0x001000df arg:0x00007bd0  0x00007bd4  0x00007bd8  0x00007bdc  
+    kern/init/init.c:63: grade_backtrace+26
+The value of ebp:0x00007be8 eip:0x00100050 arg:0x00007bf0  0x00007bf4  0x00007bf8  0x00007bfc  
+    kern/init/init.c:28: kern_init+79
+The value of ebp:0x00007bf8 eip:0x00007d6e arg:0x00007c00  0x00007c04  0x00007c08  0x00007c0c  
+    <unknow>: -- 0x00007d6d --
+++ setup timer interrupts
+
 ```
 最后一行输出的ebp为0x00007bf8，eip为0x00007d68，这时因为bootloader被加载到了0x00007c00地址处，在执行到bootasm最后"call bootmain"指令时，首先将返回地址压栈，再讲当前ebp压栈，所以此时esp为0x00007bf8。在bootmain函数入口处，有mov %esp %ebp指令，故bootmain中ebp为0x00007bf8。
 
@@ -691,13 +740,31 @@ sudo apt-get install qemu-system
 - 请编程完善kern/trap/trap.c中对中断向量表进行初始化的函数idt_init。在idt_init函数中，依次对所有中断入口进行初始化。使用mmu.h中的SETGATE宏，填充idt数组内容。每个中断的入口由tools/vectors.c生成，使用trap.c中声明的vectors数组即可。
 
 ```
-     /* LAB1 YOUR CODE : STEP 2 */     /* (1) Where are the entry addrs of each Interrupt Service Routine (ISR)?      *     All ISR's entry addrs are stored in __vectors. where is uintptr_t __vectors[] ?      *     __vectors[] is in kern/trap/vector.S which is produced by tools/vector.c      *     (try "make" command in lab1, then you will find vector.S in kern/trap DIR)      *     You can use  "extern uintptr_t __vectors[];" to define this extern variable which will be used later.      * (2) Now you should setup the entries of ISR in Interrupt Description Table (IDT).      *     Can you see idt[256] in this file? Yes, it's IDT! you can use SETGATE macro to setup each item of IDT      * (3) After setup the contents of IDT, you will let CPU know where is the IDT by using 'lidt' instruction.      *     You don't know the meaning of this instruction? just google it! and check the libs/x86.h to know more.      *     Notice: the argument of lidt is idt_pd. try to find it!      */
+     /* LAB1 YOUR CODE : STEP 2 */
+     /* (1) Where are the entry addrs of each Interrupt Service Routine (ISR)?
+      *     All ISR's entry addrs are stored in __vectors. where is uintptr_t __vectors[] ?
+      *     __vectors[] is in kern/trap/vector.S which is produced by tools/vector.c
+      *     (try "make" command in lab1, then you will find vector.S in kern/trap DIR)
+      *     You can use  "extern uintptr_t __vectors[];" to define this extern variable which will be used later.
+      * (2) Now you should setup the entries of ISR in Interrupt Description Table (IDT).
+      *     Can you see idt[256] in this file? Yes, it's IDT! you can use SETGATE macro to setup each item of IDT
+      * (3) After setup the contents of IDT, you will let CPU know where is the IDT by using 'lidt' instruction.
+      *     You don't know the meaning of this instruction? just google it! and check the libs/x86.h to know more.
+      *     Notice: the argument of lidt is idt_pd. try to find it!
+      */
 ```
 SETGATE(gate, istrap, sel, off, dpl)
 
 
 ```c
- extern uintptr_t __vectors[];    int i;    for(i = 0;  i < 256; ++i){        SETGATE(idt[i],0,GD_KTEXT,__vectors[i],DPL_KERNEL);    }       SETGATE(idt[T_SWITCH_TOK],0,GD_KTEXT,__vectors[T_SWITCH_TOK],DPL_USER);    lidt(&idt_pd); 
+ extern uintptr_t __vectors[];
+    int i;
+    for(i = 0;  i < 256; ++i){
+        SETGATE(idt[i],0,GD_KTEXT,__vectors[i],DPL_KERNEL);
+    }   
+    SETGATE(idt[T_SWITCH_TOK],0,GD_KTEXT,__vectors[T_SWITCH_TOK],DPL_USER);
+
+    lidt(&idt_pd); 
 /*
 
     传入的第一个参数gate是中断的描述符表
