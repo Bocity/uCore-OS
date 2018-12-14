@@ -96,7 +96,7 @@ do_execv函数调用load_icode（位于kern/process/proc.c中）来加载并解�
 请在实验报告中简要说明你的设计实现过程。
 
 ```c
-以下为要填写的内容 首先清空进程原先的中断帧 然后再将 中断帧中的 代码段 和 数据段
+首先清空进程原先的中断帧 然后再将 中断帧中的 代码段 和 数据段
 修改为 用户态的段选择子 栈指针设置为 用户栈顶 eip 设置为 用户程序的入口地址
 最后 确保在用户进程中能够响应中断
 static int load_icode(unsigned char *binary, size_t size) {
@@ -131,6 +131,20 @@ static int load_icode(unsigned char *binary, size_t size) {
 创建子进程的函数do_fork在执行中将拷贝当前进程（即父进程）的用户内存地址空间中的合法内容到新进程中（子进程），完成内存资源的复制。具体是通过copy_range函数（位于kern/mm/pmm.c中）实现的，请补充copy_range的实现，确保能够正确执行。
 
 ```c
+/* LAB5:EXERCISE2 YOUR CODE
+         * replicate content of page to npage, build the map of phy addr of nage with the linear addr start
+         *
+         * Some Useful MACROs and DEFINEs, you can use them in below implementation.
+         * MACROs or Functions:
+         *    page2kva(struct Page *page): return the kernel vritual addr of memory which page managed (SEE pmm.h)
+         *    page_insert: build the map of phy addr of an Page with the linear addr la
+         *    memcpy: typical memory copy function
+         *
+         * (1) find src_kvaddr: the kernel virtual address of page
+         * (2) find dst_kvaddr: the kernel virtual address of npage
+         * (3) memory copy from src_kvaddr to dst_kvaddr, size is PGSIZE
+         * (4) build the map of phy addr of  nage with the linear addr start
+         */
 这个函数是用来 拷贝父进程的用户内存地址空间到子进程中 share 此处没用到 不管它
 int copy_range(pde_t *to, pde_t *from, uintptr_t start, uintptr_t end, bool share) {
     // 找到父进程的 页虚拟内存地址 和 子进程的 页虚拟内存地址 将 父进程的页 拷贝到 子进程的页
