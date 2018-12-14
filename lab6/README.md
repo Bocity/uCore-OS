@@ -347,7 +347,7 @@ struct sched_class default_sched_class = {
 ## 结果
 实验1结果：
 
-![](/Users/haojin/Desktop/OS/lab6/img/img1.png)
+![](img/img1.png)
 
 实验2 结果：
 
